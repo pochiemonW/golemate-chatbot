@@ -1,0 +1,2 @@
+# golemate-chatbot
+目標設定とTodoリスト作成を手伝ってくれるチャットボット
