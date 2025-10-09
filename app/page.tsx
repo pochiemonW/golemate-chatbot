@@ -31,7 +31,7 @@ export default function Home() {
 
   return (
     <main className="flex flex-col h-screen max-w-xl mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">🎯 Chat with AI</h1>
+      <h1 className="text-2xl font-bold mb-4">あなたと一緒に目標を立ててくれるチャットボット（仮）</h1>
 
       <div className="flex-1 overflow-y-auto border rounded-lg p-3 mb-4 space-y-2">
         {messages.map((m, i) => (
@@ -53,6 +53,12 @@ export default function Home() {
         <input
           value={input}
           onChange={(e) => setInput(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && e.ctrlKey) {
+              e.preventDefault();
+              void sendMessage();
+            }
+          }}
           className="flex-1 border rounded-lg p-2"
           placeholder="メッセージを入力..."
         />
@@ -63,6 +69,7 @@ export default function Home() {
           送信
         </button>
       </div>
+      <p className="text-xs text-gray-500 mt-2">ヒント: Ctrl + Enter で送信できます</p>
     </main>
   );
 }
