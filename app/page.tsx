@@ -62,18 +62,26 @@ export default function Home() {
       <h1 className="text-2xl font-bold mb-4">あなたと一緒に目標を立ててくれるチャットボット（仮）</h1>
 
       <div className="flex-1 overflow-y-auto border rounded-lg p-3 mb-4 space-y-2">
-        {messages.map((m, i) => (
-          <div
-            key={i}
-            className={`p-2 rounded-lg ${
-              m.role === "user" ? "bg-blue-100 self-end" : "bg-gray-100"
-            }`}
-          >
-            <p>
-              <strong>{m.role === "user" ? "あなた：" : "AI："}</strong> {m.content}
-            </p>
-          </div>
-        ))}
+        {messages.map((m, i) => {
+          // AIのメッセージからJSON部分を除去
+          let displayContent = m.content;
+          if (m.role === "assistant") {
+            displayContent = m.content.replace(/```json\n[\s\S]*?\n```/g, '');
+          }
+          
+          return (
+            <div
+              key={i}
+              className={`p-2 rounded-lg ${
+                m.role === "user" ? "bg-blue-100 self-end" : "bg-gray-100"
+              }`}
+            >
+              <p>
+                <strong>{m.role === "user" ? "あなた：" : "AI："}</strong> {displayContent}
+              </p>
+            </div>
+          );
+        })}
         {loading && <p className="text-gray-500">AIが考え中...</p>}
       </div>
 
