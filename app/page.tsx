@@ -1,11 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import { TodoData, generateMarkdown, downloadMarkdown } from "./utils/todo-generator";
 
 export default function Home() {
   const [messages, setMessages] = useState<{ role: string; content: string }[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [todoData, setTodoData] = useState<TodoData | null>(null);
 
   const sendMessage = async () => {
     if (!input.trim()) return;
@@ -26,6 +28,32 @@ export default function Home() {
 
     if (data.message) {
       setMessages([...newMessages, data.message]);
+      
+      // Todoデータが含まれているかチェック
+      if (data.todoData) {
+        setTodoData(data.todoData);
+      } else {
+        // メッセージ内容からJSONデータを抽出
+        const messageContent = data.message.content;
+        if (messageContent) {
+          const jsonMatch = messageContent.match(/```json\n([\s\S]*?)\n```/);
+          if (jsonMatch) {
+            try {
+              const extractedTodoData = JSON.parse(jsonMatch[1]);
+              setTodoData(extractedTodoData);
+            } catch (e) {
+              console.error('JSON parse error:', e);
+            }
+          }
+        }
+      }
+    }
+  };
+
+  const handleDownloadTodo = () => {
+    if (todoData) {
+      const markdown = generateMarkdown(todoData);
+      downloadMarkdown(markdown, `todo-list-${new Date().toISOString().split('T')[0]}.md`);
     }
   };
 
@@ -69,6 +97,19 @@ export default function Home() {
           送信
         </button>
       </div>
+      
+      {todoData && (
+        <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+          <p className="text-sm text-green-800 mb-2">✅ Todoリストが完成しました！</p>
+          <button
+            onClick={handleDownloadTodo}
+            className="bg-green-500 text-white px-4 py-2 rounded-lg text-sm hover:bg-green-600"
+          >
+            📥 Todoをダウンロード
+          </button>
+        </div>
+      )}
+      
       <p className="text-xs text-gray-500 mt-2">ヒント: Ctrl + Enter で送信できます</p>
     </main>
   );

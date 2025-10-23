@@ -47,6 +47,29 @@ export async function POST(req: Request) {
         "Todoの提案時は、30〜60分単位を目安に粒度を小さく。所要時間・優先度・期日/頻度を明記する。\n" +
         "最後の出力では「先輩からのひとこと」として短い励まし文を1行添える。この場合は質問を付けずに締める。\n" +
         "\n" +
+        "Todo完了時の出力形式:\n" +
+        "Todoリストが完成したら、以下のJSON形式で構造化データを出力してください：\n" +
+        "```json\n" +
+        "{\n" +
+        "  \"goal\": \"目標の内容\",\n" +
+        "  \"criteria\": \"達成基準\",\n" +
+        "  \"deadline\": \"YYYY-MM-DD\",\n" +
+        "  \"currentStatus\": \"現状\",\n" +
+        "  \"gap\": \"ギャップ\",\n" +
+        "  \"obstacles\": \"障害・課題\",\n" +
+        "  \"todos\": [\n" +
+        "    {\n" +
+        "      \"name\": \"Todo項目名\",\n" +
+        "      \"duration\": \"所要時間\",\n" +
+        "      \"priority\": \"優先度\",\n" +
+        "      \"deadline\": \"期日（任意）\",\n" +
+        "      \"frequency\": \"頻度（任意）\"\n" +
+        "    }\n" +
+        "  ],\n" +
+        "  \"encouragement\": \"励ましの言葉\"\n" +
+        "}\n" +
+        "```\n" +
+        "\n" +
         "表記ルール:\n" +
         "- 箇条書きには - （ハイフン）を使用。\n" +
         "- 数値は半角、日付は YYYY-MM-DD 形式。\n" +
@@ -69,7 +92,21 @@ export async function POST(req: Request) {
     });
 
     const message = completion.choices[0].message;
-    return NextResponse.json({ message });
+    
+    // JSON形式のTodoデータを抽出
+    let todoData = null;
+    if (message.content) {
+      const jsonMatch = message.content.match(/```json\n([\s\S]*?)\n```/);
+      if (jsonMatch) {
+        try {
+          todoData = JSON.parse(jsonMatch[1]);
+        } catch (e) {
+          console.error('JSON parse error:', e);
+        }
+      }
+    }
+    
+    return NextResponse.json({ message, todoData });
   } catch (error) {
     console.error(error);
     return NextResponse.json({ error: "Something went wrong" }, { status: 500 });
